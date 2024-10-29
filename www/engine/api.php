@@ -1,6 +1,10 @@
 <?php
 
-    // эмуляция стороннего api.site.com
+    /**
+     * эмуляция стороннего api.site.com
+     * @method book эмуляция работы api.site.com/book
+     * @method approve эмуляция api.site.com/approve, выводит случайный ответ api
+     */
     final class api
     {
         private $db;
