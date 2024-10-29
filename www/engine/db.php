@@ -1,4 +1,14 @@
 <?php 
+    /**
+     * pdo for mysql connection
+     * 
+     * @method dbconnect - установка соединения
+     * @method get_arr - получить массив данных по sql запросу
+     * @method get_single - получить данные одной строки по sql запросу
+     * @method send - отправить slq запрос типа insert или update ответ будет количеством изменных строк
+     * @method escape - escape string для последующей отправки
+     * @method last_insert_id - id последней вставленной строки
+     */
 
     final class db
     {
