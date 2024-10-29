@@ -8,7 +8,7 @@
             $this->db = new db;
             $this->api = new api;
 
-            // автоподнятие таблицы для проекта
+            // автоподнятие таблицы для заказов
             $sql = "SHOW TABLES LIKE 'orders'";
             $result = $this->db->get_single($sql);
 
@@ -19,16 +19,28 @@
                     `id` INT(10) NOT NULL AUTO_INCREMENT, 
                     `event_id` INT(11) NOT NULL DEFAULT 0,
                     `event_date` DATETIME NOT NULL,
-                    `ticket_adult_price` INT(11) NOT NULL DEFAULT 0,
-                    `ticket_adult_quantity` INT(11) NOT NULL DEFAULT 0,
-                    `ticket_kid_price` INT(11) NOT NULL DEFAULT 0,
-                    `ticket_kid_quantity` INT(11) NOT NULL DEFAULT 0,
                     `barcode` VARCHAR(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
                     `user_id` INT(10) NOT NULL DEFAULT 0, 
                     `equal_price` INT(11) NOT NULL DEFAULT 0,
                     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (`id`),
                     UNIQUE (`barcode`(120))
+                ) ENGINE = InnoDB;";
+                $this->db->send($sql);
+            }
+
+            // автоподнятие таблицы для билетов
+            $sql = "SHOW TABLES LIKE 'tickets'";
+            $result = $this->db->get_single($sql);
+
+            if ($result === false) {
+                $sql = "CREATE TABLE `" . mysql_connect['db'] . "`.`tickets` (
+                    `id` INT(10) NOT NULL AUTO_INCREMENT, 
+                    `order_id` INT(11) NOT NULL DEFAULT 0,
+                    `type` INT(10) NOT NULL COMMENT '0 - adult\r\n1 - kid',
+                    `price` INT(11) NOT NULL DEFAULT 0,
+                    `quantity` INT(11) NOT NULL DEFAULT 0,
+                    PRIMARY KEY (`id`)
                 ) ENGINE = InnoDB;";
                 $this->db->send($sql);
             }
@@ -52,40 +64,54 @@
 
             // генерируем данные, которых не хватало для заполнения
             // попадают из личного кабинета и т.п.
-            $data['user_id'] = rand(1, 1000); // можно через отправлять в post от js или хранить в сессии
-            $data['equal_price'] = 
-                intval($data['ticket_adult_price']) * intval($data['ticket_adult_quantity']) + 
-                intval($data['ticket_kid_price']) * intval($data['ticket_kid_quantity']);
 
+            $data['user_id'] = rand(1, 1000);
+            $data['equal_price'] = 0;
+            foreach ($data['tickets'] as $key => $tickets) {
+                $data['equal_price'] += intval($tickets['price']) * intval($tickets['quantity']);
+            }
+
+            // заполняем сначала основную информацию по заказу 
             $sql = "INSERT INTO `orders`(
                         `event_id`, 
                         `event_date`, 
-                        `ticket_adult_price`, 
-                        `ticket_adult_quantity`, 
-                        `ticket_kid_price`, 
-                        `ticket_kid_quantity`, 
                         `barcode`, 
                         `user_id`, 
                         `equal_price`
                     ) VALUES (
                         '" . intval($data['event_id']) . "',
                         " . $this->db->escape($data['event_date']) . ",
-                        '" . intval($data['ticket_adult_price']) . "',
-                        '" . intval($data['ticket_adult_quantity']) . "',
-                        '" . intval($data['ticket_kid_price']) . "',
-                        '" . intval($data['ticket_kid_quantity']) . "',
                         '" . intval($data['barcode']) . "',
                         '" . intval($data['user_id']) . "',
                         '" . intval($data['equal_price']) . "'
                     )";
             $this->db->send($sql);
+            
+            // получаем id заказа из БД 
+            $sql = "SELECT `id` FROM `orders` WHERE `barcode` = " . intval($barcode);
+            $order_id = $this->db->get_single($sql)['id'];
+
+            // затем заполняем данные по билетам
+            foreach ($data['tickets'] as $key => $tickets) {
+                $sql = "INSERT INTO `tickets`(
+                            `order_id`, 
+                            `type`, 
+                            `price`, 
+                            `quantity`
+                        ) VALUES (
+                            '" . intval($order_id) . "',
+                            '" . intval($tickets['type']) . "',
+                            '" . intval($tickets['price']) . "',
+                            '" . intval($tickets['quantity']) . "'
+                        )";
+                $this->db->send($sql);
+            }
             return $approve;
         }
 
         public function barcodeGeneration (): string // генератор для баркода
         {
-            // в БД указано кличество символов до 120, можно поставить ограничение в rand()
-            // для генерации больших чисел 
+            // в БД указано кличество символов до 120, можно поставить ограничение в rand() max value для генерации больших чисел 
             $barcode = rand(0, 99999999);
             return $barcode;
         } 

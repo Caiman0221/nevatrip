@@ -22,6 +22,28 @@
         'ticket_kid_price' => rand(0, 1000),
         'ticket_kid_quantity' => rand(0, 15)
     ];
+    $data['tickets'] = [];
+
+    // преобразовать данные по типу билетов в форму массива или изначально поменять структуру данных при post запросе с клиента
+    if (!empty($data['ticket_adult_price']) && !empty($data['ticket_adult_quantity'])) {
+        array_push($data['tickets'], 
+            [
+                'type' => 0,
+                'price' => $data['ticket_adult_price'],
+                'quantity' => $data['ticket_adult_quantity']
+            ]
+        );
+    }
+
+    if (!empty($data['ticket_kid_price']) && !empty($data['ticket_kid_quantity'])) {
+        array_push($data['tickets'], 
+            [
+                'type' => 1,
+                'price' => $data['ticket_kid_price'],
+                'quantity' => $data['ticket_kid_quantity']
+            ]
+        );
+    }
 
     // обрабатываем данные нового заказа
     $order = new order;
