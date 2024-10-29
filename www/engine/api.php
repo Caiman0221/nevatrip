@@ -27,7 +27,10 @@
                 ['error' => 'no seats'],
                 ['error' => 'fan removed']
             ];
-            $type = rand(0, 4);
+            $type = rand(0, 1); // true или false
+            if ($type === 1) return $responses[0];
+            
+            $type = rand(1, 4);
             return $responses[$type];
         }
     }

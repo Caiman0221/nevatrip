@@ -72,7 +72,7 @@
             }
 
             // заполняем сначала основную информацию по заказу 
-            $sql = "INSERT INTO `orders`(
+            $sql = "INSERT INTO `orders_2`(
                         `event_id`, 
                         `event_date`, 
                         `barcode`, 
