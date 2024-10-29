@@ -9,7 +9,7 @@
         }
         // проверка на существование такого баркода в БД, если его нет, то возвращаем результат
         public function book (array $data) : array {
-            $sql = "SELECT count(*) FROM `orders` WHERE `barcode` = " . intval($data['barcode']);
+            $sql = "SELECT count(*) FROM `orders_2` WHERE `barcode` = " . intval($data['barcode']);
             $result = $this->db->get_single($sql); 
 
             if ($result['count(*)'] === 0) {

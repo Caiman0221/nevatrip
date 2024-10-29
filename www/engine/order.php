@@ -9,13 +9,13 @@
             $this->api = new api;
 
             // автоподнятие таблицы для заказов
-            $sql = "SHOW TABLES LIKE 'orders'";
+            $sql = "SHOW TABLES LIKE 'orders_2'";
             $result = $this->db->get_single($sql);
 
             if ($result === false) {
                 // в задании неточность, event_date в примере datetime, а в описании varchar(10) ?? 
                 // в таблице в примере id 2 created в часе 62 минуты ?? 
-                $sql = "CREATE TABLE `" . mysql_connect['db'] . "`.`orders` (
+                $sql = "CREATE TABLE `" . mysql_connect['db'] . "`.`orders_2` (
                     `id` INT(10) NOT NULL AUTO_INCREMENT, 
                     `event_id` INT(11) NOT NULL DEFAULT 0,
                     `event_date` DATETIME NOT NULL,
@@ -30,11 +30,11 @@
             }
 
             // автоподнятие таблицы для билетов
-            $sql = "SHOW TABLES LIKE 'tickets'";
+            $sql = "SHOW TABLES LIKE 'tickets_2'";
             $result = $this->db->get_single($sql);
 
             if ($result === false) {
-                $sql = "CREATE TABLE `" . mysql_connect['db'] . "`.`tickets` (
+                $sql = "CREATE TABLE `" . mysql_connect['db'] . "`.`tickets_2` (
                     `id` INT(10) NOT NULL AUTO_INCREMENT, 
                     `order_id` INT(11) NOT NULL DEFAULT 0,
                     `type` INT(10) NOT NULL COMMENT '0 - adult\r\n1 - kid',
@@ -88,12 +88,12 @@
             $this->db->send($sql);
             
             // получаем id заказа из БД 
-            $sql = "SELECT `id` FROM `orders` WHERE `barcode` = " . intval($barcode);
+            $sql = "SELECT `id` FROM `orders_2` WHERE `barcode` = " . intval($barcode);
             $order_id = $this->db->get_single($sql)['id'];
 
             // затем заполняем данные по билетам
             foreach ($data['tickets'] as $key => $tickets) {
-                $sql = "INSERT INTO `tickets`(
+                $sql = "INSERT INTO `tickets_2`(
                             `order_id`, 
                             `type`, 
                             `price`, 
